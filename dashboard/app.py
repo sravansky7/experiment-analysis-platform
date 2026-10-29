@@ -108,19 +108,28 @@ display_results["Absolute Effect (pp)"] = (
 )
 
 st.dataframe(
-    display_results[
-        [
-            "experiment_id",
-            "Control Conversion (%)",
-            "Treatment Conversion (%)",
-            "Absolute Effect (pp)",
-            "p_value",
-            "statistically_significant",
-        ]
-    ].round(3),
-    use_container_width=True,
-    hide_index=True,
+display_results[
+[
+"experiment_id",
+"Control Conversion (%)",
+"Treatment Conversion (%)",
+"Absolute Effect (pp)",
+"p_value",
+"statistically_significant",
+]
+].style.format(
+{
+"Control Conversion (%)": "{:.3f}",
+"Treatment Conversion (%)": "{:.3f}",
+"Absolute Effect (pp)": "{:.3f}",
+"p_value": "{:.3e}",
+}
+),
+use_container_width=True,
+hide_index=True,
 )
+
+
 
 # Conversion rate chart
 st.subheader("Control vs Treatment Conversion Rates")
@@ -195,3 +204,110 @@ st.caption(
     "does not establish business significance or guarantee "
     "causality when experiment assumptions are violated."
 )
+
+# Treatment Effect Confidence Interval Chart
+
+st.subheader("📊 Treatment Effects with 95% Confidence Intervals")
+
+chart_data = filtered_results.copy()
+
+chart_data["Effect (pp)"] = chart_data["absolute_effect"] * 100
+chart_data["CI Lower (pp)"] = (
+chart_data["confidence_interval_lower"] * 100
+)
+chart_data["CI Upper (pp)"] = (
+chart_data["confidence_interval_upper"] * 100
+)
+
+chart_data = chart_data.sort_values("Effect (pp)")
+
+chart_data["CI Error Lower"] = (
+chart_data["Effect (pp)"] - chart_data["CI Lower (pp)"]
+)
+chart_data["CI Error Upper"] = (
+chart_data["CI Upper (pp)"] - chart_data["Effect (pp)"]
+)
+
+st.caption(
+"Points represent the estimated treatment effect. "
+"Horizontal bars show 95% confidence intervals. "
+"The zero line represents no difference between treatment and control."
+)
+
+import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots(figsize=(10, 6))
+
+ax.errorbar(
+chart_data["Effect (pp)"],
+chart_data["experiment_id"],
+xerr=[
+chart_data["CI Error Lower"],
+chart_data["CI Error Upper"],
+],
+fmt="o",
+capsize=4,
+)
+
+ax.axvline(x=0, linestyle="--")
+ax.set_xlabel("Absolute Treatment Effect (percentage points)")
+ax.set_ylabel("Experiment")
+ax.set_title("Treatment Effect Estimates with 95% Confidence Intervals")
+ax.grid(axis="x", alpha=0.3)
+
+fig.tight_layout()
+st.pyplot(fig)
+plt.close(fig)
+
+# Anomaly Detection Dashboard
+st.divider()
+st.header("🚨 Anomaly Detection")
+
+anomaly_file = OUTPUT_DIR / "anomaly_detection_report.csv"
+
+if anomaly_file.exists():
+    anomaly_df = pd.read_csv(anomaly_file)
+
+    total_anomalies = len(anomaly_df)
+    anomaly_types = (
+        anomaly_df["anomaly_type"].nunique()
+        if "anomaly_type" in anomaly_df.columns
+        else 0
+    )
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.metric("Total Anomalies Detected", total_anomalies)
+
+    with col2:
+        st.metric("Anomaly Types", anomaly_types)
+
+    if "anomaly_type" in anomaly_df.columns:
+        st.subheader("Anomaly Breakdown")
+
+        anomaly_counts = (
+            anomaly_df["anomaly_type"]
+            .value_counts()
+            .rename_axis("Anomaly Type")
+            .reset_index(name="Count")
+        )
+
+        st.bar_chart(
+            anomaly_counts,
+            x="Count",
+            y="Anomaly Type",
+            horizontal=True,
+        )
+
+    st.subheader("Detailed Anomaly Report")
+    st.dataframe(
+        anomaly_df,
+        use_container_width=True,
+        hide_index=True,
+    )
+
+else:
+    st.warning(
+        "Anomaly report not found. Run the anomaly detector first."
+    )

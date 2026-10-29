@@ -198,7 +198,7 @@ def calculate_metrics():
 
         if standard_error > 0:
             z_score = absolute_effect / standard_error
-            p_value = float(2 * norm.sf(abs(z_score)))
+            p_value = float(max(2 * norm.sf(abs(z_score)), np.finfo(float).tiny))
 
             ci_lower = absolute_effect - z_critical * standard_error
             ci_upper = absolute_effect + z_critical * standard_error
