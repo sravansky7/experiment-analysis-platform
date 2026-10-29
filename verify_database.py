@@ -20,6 +20,7 @@ def verify_database():
             "assignments",
             "exposure_events",
             "conversion_events",
+            "guardrail_events",
         ]
 
         for table in tables:
@@ -70,4 +71,16 @@ def verify_database():
 
 if __name__ == "__main__":
     verify_database()
+import sqlite3
+
+from src.config import OUTPUT_DIR
+
+with sqlite3.connect(OUTPUT_DIR / "experiment_analysis.db") as connection:
+    tables = connection.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"
+    ).fetchall()
+
+    print("\nDatabase tables:")
+    for table in tables:
+        print("-", table[0])
 

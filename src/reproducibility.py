@@ -4,6 +4,7 @@ import subprocess
 import sys
 
 from src.config import RAW_DATA_DIR
+from src.guardrail_events import generate_guardrail_events
 
 
 FILES_TO_CHECK = [
@@ -13,6 +14,7 @@ FILES_TO_CHECK = [
     "assignments.csv",
     "exposure_events.csv",
     "conversion_events.csv",
+    "guardrail_events.csv",
 ]
 
 
@@ -50,6 +52,7 @@ def verify_reproducibility():
         [sys.executable, "-m", "src.events"],
         check=True,
     )
+    generate_guardrail_events()
     first_run = calculate_checksums()
 
     print("\nRun 2: Regenerating datasets...")
@@ -61,6 +64,7 @@ def verify_reproducibility():
         [sys.executable, "-m", "src.events"],
         check=True,
     )
+    generate_guardrail_events()
     second_run = calculate_checksums()
 
     print("\nCHECKSUM COMPARISON")

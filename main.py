@@ -5,6 +5,7 @@ from src.validation import validate_data
 from src.randomization import validate_randomization
 from src.metrics import calculate_metrics
 from src.guardrails import calculate_guardrails
+from src.guardrail_events import generate_guardrail_events
 
 
 def run_pipeline():
@@ -33,9 +34,11 @@ def run_pipeline():
     print("\nSTEP 5: CALCULATING TREATMENT EFFECTS")
     experiment_results = calculate_metrics()
 
-    print("\nSTEP 6: EVALUATING GUARDRAILS")
+    print("\nSTEP 6: GENERATING GUARDRAIL SOURCE DATA")
+    generate_guardrail_events()
+    print("\nSTEP 7: EVALUATING GUARDRAILS")
     guardrail_results = calculate_guardrails()
-
+    
     print("\n" + "=" * 60)
     print("PIPELINE EXECUTION SUMMARY")
     print("=" * 60)

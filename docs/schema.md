@@ -236,3 +236,23 @@ These counts describe the current generated dataset and may change if the config
 ---
 
 **Schema status:** Logical schema documented; explicit relational constraints in SQLite remain a planned improvement.
+
+## guardrail Events
+
+**Source:** `data/raw/guardrail_events.csv`
+
+| Column               | Type    | Constraints                                         |
+| -------------------- | ------- | --------------------------------------------------- |
+| `guardrail_event_id` | INTEGER | Primary key in SQLite; generated during export      |
+| `experiment_id`      | TEXT    | Foreign key referencing `experiments.experiment_id` |
+| `variant_name`       | TEXT    | Must be `Control` or `Treatment`                    |
+| `assigned_users`     | INTEGER | Must be greater than zero                           |
+| `payment_errors`     | INTEGER | Must be between zero and `assigned_users`           |
+| `refunds`            | INTEGER | Must be between zero and `assigned_users`           |
+
+**Integrity constraints:**
+
+* Each experiment can have only one record per variant.
+* The experiment must exist in the `experiments` table.
+* Payment errors and refunds cannot exceed the assigned user count.
+* The `variant_name` must be either `Control` or `Treatment`.

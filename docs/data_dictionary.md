@@ -119,8 +119,32 @@ The six primary datasets are stored in `data/raw/`.
 * User, variant, and experiment must match that assignment.
 * The conversion must occur within the experiment's date window.
 * Conversion values must be numeric and non-negative.
+## 8. guardrail_events
 
-## 8. Entity Relationships
+**Source:** `data/raw/guardrail_events.csv`
+
+| Column           | Type    | Constraint or purpose                                            |
+| ---------------- | ------- | ---------------------------------------------------------------- |
+| `experiment_id`  | TEXT    | Associated experiment                                            |
+| `variant_name`   | TEXT    | Variant name: `Control` or `Treatment`                           |
+| `assigned_users` | INTEGER | Number of assigned users; must be positive                       |
+| `payment_errors` | INTEGER | Number of payment errors; must be between 0 and `assigned_users` |
+| `refunds`        | INTEGER | Number of refunds; must be between 0 and `assigned_users`        |
+
+**Integrity rules:**
+
+* The experiment must exist.
+* Each experiment must have only one record per variant.
+* `variant_name` must be `Control` or `Treatment`.
+* `assigned_users` must be greater than zero.
+* `payment_errors` and `refunds` must be non-negative and cannot exceed `assigned_users`.
+
+**Purpose:**
+
+This dataset supports guardrail analysis by calculating payment error and refund rates for each experiment variant. It helps identify whether a treatment improves the primary metric while negatively affecting important business metrics.
+
+
+## 9. Entity Relationships
 
 ```text
 experiments
@@ -140,7 +164,7 @@ experiments
 * Each assignment links one experiment, user, and variant.
 * Exposure and conversion events reference assignments.
 
-## 9. Analysis Outputs
+## 10. Analysis Outputs
 
 | File                           | Description                                         |
 | ------------------------------ | --------------------------------------------------- |
@@ -152,7 +176,7 @@ experiments
 | `anomaly_detection_report.csv` | Results from anomaly detection.                     |
 | `source_manifest.json`         | Dataset metadata and SHA-256 checksums.             |
 
-## 10. Implementation Notes
+## 11. Implementation Notes
 
 * All records are synthetic.
 * The configured random seed is `20261022`.

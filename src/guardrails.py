@@ -1,77 +1,81 @@
-import numpy as np
+
 import pandas as pd
 
-from src.config import RANDOM_SEED, RAW_DATA_DIR, OUTPUT_DIR, create_directories
+from src.config import RAW_DATA_DIR, OUTPUT_DIR, create_directories
+
+
+ERROR_REGRESSION_THRESHOLD = 0.03
+REFUND_REGRESSION_THRESHOLD = 0.02
 
 
 def calculate_guardrails():
+    """Evaluate guardrails using previously generated source data."""
     create_directories()
 
-    rng = np.random.default_rng(RANDOM_SEED)
+    source_path = RAW_DATA_DIR / "guardrail_events.csv"
 
-    assignments = pd.read_csv(
-        RAW_DATA_DIR / "assignments.csv"
-    )
+    if not source_path.exists():
+        raise FileNotFoundError(
+            f"Guardrail source data not found: {source_path}. "
+            "Run 'python -m src.guardrail_events' first."
+        )
 
-    variants = pd.read_csv(
-        RAW_DATA_DIR / "variants.csv"
-    )
+    metrics = pd.read_csv(source_path)
 
-    assignments = assignments.merge(
-        variants[["variant_id", "variant_name"]],
-        on="variant_id",
-        validate="many_to_one",
-    )
+    required_columns = {
+        "experiment_id",
+        "variant_name",
+        "assigned_users",
+        "payment_errors",
+        "refunds",
+    }
 
-    results = []
+    missing_columns = required_columns - set(metrics.columns)
 
-    for experiment_id, group in assignments.groupby("experiment_id"):
+    if missing_columns:
+        raise ValueError(
+            f"Guardrail dataset is missing columns: {sorted(missing_columns)}"
+        )
 
-        for variant_name, variant_group in group.groupby("variant_name"):
+    if metrics.duplicated(["experiment_id", "variant_name"]).any():
+        raise ValueError(
+            "Duplicate experiment/variant records found in guardrail data."
+        )
 
-            n = len(variant_group)
+    if not metrics["variant_name"].isin(["Control", "Treatment"]).all():
+        raise ValueError("Unknown variant name in guardrail data.")
 
-            # Simulated guardrail outcomes.
-            # Experiment 5 deliberately has elevated treatment error rates.
-            error_probability = 0.02
+    if (metrics["assigned_users"] <= 0).any():
+        raise ValueError("assigned_users must be greater than zero.")
 
-            if (
-                experiment_id == "EXP-2026-000005"
-                and variant_name == "Treatment"
-            ):
-                error_probability = 0.08
+    for column in ["payment_errors", "refunds"]:
+        if (metrics[column] < 0).any():
+            raise ValueError(f"{column} cannot be negative.")
 
-            payment_errors = int(
-                rng.binomial(n, error_probability)
+        if (metrics[column] > metrics["assigned_users"]).any():
+            raise ValueError(
+                f"{column} cannot exceed assigned_users."
             )
 
-            refund_probability = 0.03
+    metrics["payment_error_rate"] = (
+        metrics["payment_errors"] / metrics["assigned_users"]
+    )
 
-            refunds = int(
-                rng.binomial(n, refund_probability)
-            )
-
-            results.append({
-                "experiment_id": experiment_id,
-                "variant_name": variant_name,
-                "assigned_users": n,
-                "payment_errors": payment_errors,
-                "payment_error_rate": payment_errors / n,
-                "refunds": refunds,
-                "refund_rate": refunds / n,
-            })
-
-    metrics = pd.DataFrame(results)
+    metrics["refund_rate"] = (
+        metrics["refunds"] / metrics["assigned_users"]
+    )
 
     comparisons = []
 
     for experiment_id, group in metrics.groupby("experiment_id"):
-
         control = group[group["variant_name"] == "Control"]
         treatment = group[group["variant_name"] == "Treatment"]
 
-        if control.empty or treatment.empty:
-            continue
+        if len(control) != 1 or len(treatment) != 1:
+            raise ValueError(
+                f"{experiment_id} must have exactly one Control "
+                "and one Treatment guardrail record."
+            )
 
         c = control.iloc[0]
         t = treatment.iloc[0]
@@ -84,13 +88,13 @@ def calculate_guardrails():
             t["refund_rate"] - c["refund_rate"]
         )
 
-        # Flag when the treatment error rate is at least
-        # 3 percentage points higher than control.
-        error_regression = error_difference >= 0.03
+        error_regression = (
+            error_difference >= ERROR_REGRESSION_THRESHOLD
+        )
 
-        # Flag when the treatment refund rate is at least
-        # 2 percentage points higher than control.
-        refund_regression = refund_difference >= 0.02
+        refund_regression = (
+            refund_difference >= REFUND_REGRESSION_THRESHOLD
+        )
 
         comparisons.append({
             "experiment_id": experiment_id,

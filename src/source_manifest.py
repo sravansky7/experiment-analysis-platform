@@ -21,6 +21,7 @@ DATASETS = {
     "assignments": "assignments.csv",
     "exposure_events": "exposure_events.csv",
     "conversion_events": "conversion_events.csv",
+    "guardrail_events": "guardrail_events.csv"
 }
 
 

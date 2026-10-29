@@ -6,7 +6,6 @@ import pandas as pd
 
 from src.config import RAW_DATA_DIR, OUTPUT_DIR, create_directories
 
-
 TABLES = {
     "experiments": "experiments.csv",
     "variants": "variants.csv",
@@ -14,6 +13,7 @@ TABLES = {
     "assignments": "assignments.csv",
     "exposure_events": "exposure_events.csv",
     "conversion_events": "conversion_events.csv",
+    "guardrail_events": "guardrail_events.csv",
 }
 
 
@@ -95,11 +95,30 @@ CREATE TABLE conversion_events (
     FOREIGN KEY (experiment_id, variant_id)
         REFERENCES variants(experiment_id, variant_id)
 );
+
+CREATE TABLE guardrail_events (
+    guardrail_event_id INTEGER PRIMARY KEY,
+    experiment_id TEXT NOT NULL,
+    variant_name TEXT NOT NULL CHECK (
+        variant_name IN ('Control', 'Treatment')
+    ),
+    assigned_users INTEGER NOT NULL CHECK (assigned_users > 0),
+    payment_errors INTEGER NOT NULL CHECK (
+        payment_errors >= 0 AND payment_errors <= assigned_users
+    ),
+    refunds INTEGER NOT NULL CHECK (
+        refunds >= 0 AND refunds <= assigned_users
+    ),
+    UNIQUE (experiment_id, variant_name),
+    FOREIGN KEY (experiment_id)
+        REFERENCES experiments(experiment_id)
+);
 """
 
 
+
 def load_datasets():
-    """Load the six generated CSV datasets."""
+    """Load the generated CSV datasets."""
     datasets = {}
 
     for table_name, filename in TABLES.items():
@@ -113,7 +132,18 @@ def load_datasets():
 
         datasets[table_name] = pd.read_csv(file_path)
 
+    # Generate a primary key for each guardrail event.
+    guardrail_events = datasets["guardrail_events"].copy()
+    guardrail_events.insert(
+        0,
+        "guardrail_event_id",
+        range(1, len(guardrail_events) + 1),
+    )
+    datasets["guardrail_events"] = guardrail_events
+
     return datasets
+
+
 
 
 def export_json(datasets):
@@ -154,6 +184,7 @@ def export_sql(datasets):
             "assignments",
             "exposure_events",
             "conversion_events",
+            "guardrail_events",
         ]
 
         for table_name in insertion_order:
@@ -193,6 +224,7 @@ def export_sql_seed(datasets):
             "assignments",
             "exposure_events",
             "conversion_events",
+            "guardrail_events",
         ]
 
         for table_name in insertion_order:
