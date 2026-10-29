@@ -1,5 +1,8 @@
 
+import numpy as np
 import pandas as pd
+
+from src.metrics import holm_adjust
 
 from src.data_generator import (
     generate_experiments,
@@ -156,4 +159,27 @@ def test_validation_detects_conversion_outside_experiment_window(
         "outside their experiment window" in error
         for error in errors
     )
+def test_holm_adjust_corrects_multiple_p_values():
+    p_values = [0.01, 0.04, 0.03]
+
+    adjusted = holm_adjust(p_values)
+
+    assert np.allclose(adjusted, [0.03, 0.06, 0.06])
+
+
+def test_holm_adjust_keeps_values_between_zero_and_one():
+    p_values = [0.001, 0.02, 0.5, 1.0]
+
+    adjusted = holm_adjust(p_values)
+
+    assert np.all(adjusted >= 0)
+    assert np.all(adjusted <= 1)
+
+
+def test_holm_adjust_handles_equal_p_values():
+    p_values = [0.02, 0.02, 0.02]
+
+    adjusted = holm_adjust(p_values)
+
+    assert np.allclose(adjusted, [0.06, 0.06, 0.06])
 

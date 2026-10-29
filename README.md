@@ -19,7 +19,7 @@ This project implements a synthetic experimentation workflow that generates expe
 * Validate primary keys, foreign keys, eligibility, timestamps, and business rules.
 * Detect sample-ratio mismatch (SRM).
 * Estimate conversion rates and treatment effects.
-* Calculate confidence intervals and statistical significance.
+* Calculate confidence intervals, statistical significance, and Holm-adjusted p-values for multiple comparisons.
 * Evaluate guardrail metrics and flag potential regressions.
 * Detect selected data-quality anomalies.
 * Export data in CSV, JSON, and SQL-compatible formats.
@@ -259,7 +259,8 @@ The platform calculates control and treatment conversion rates, absolute effect,
 
 The primary analysis follows an intention-to-treat approach: assigned users are analyzed according to their assigned variant rather than requiring an exposure event.
 
-The current implementation uses a normal-approximation method for the conversion-rate difference. Statistical assumptions and multiple-comparison considerations should be reviewed before applying the approach to real experiments.
+The implementation uses a normal-approximation method to estimate the difference in conversion rates, its standard error, two-sided p-value, and confidence interval. Holm's step-down procedure adjusts p-values to account for multiple hypothesis tests across experiments. The reported confidence intervals remain unadjusted 95% intervals and do not provide simultaneous coverage across all experiments. These methods and their assumptions should be reviewed before applying the platform to real experiments.
+
 
 ### Guardrail evaluation
 
