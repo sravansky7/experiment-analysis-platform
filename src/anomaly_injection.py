@@ -79,6 +79,8 @@ def inject_inconsistent_conversion_window():
     conversions.to_csv(path, index=False)
 
 
+
+
 def inject_sample_ratio_mismatch():
     case_dir = prepare_case("sample_ratio_mismatch")
 
@@ -102,49 +104,28 @@ def inject_sample_ratio_mismatch():
         "variant_id",
     ].iloc[0]
 
+    target_mask = assignments["experiment_id"] == experiment_id
+
     control_indices = assignments[
-        (assignments["experiment_id"] == experiment_id)
-        & (assignments["variant_id"] == control_id)
+        target_mask & (assignments["variant_id"] == control_id)
     ].index
 
-    # Move a large portion of control assignments to treatment.
-    # This intentionally creates a statistically significant SRM.
-    indices_to_change = control_indices[: min(200, len(control_indices))]
-
+    indices_to_change = control_indices[:300]
+    print("Control assignments available:", len(control_indices))
+    print("Assignments selected for change:", len(indices_to_change))
+    
+    print("Before change:", assignments.loc[target_mask, "variant_id"].value_counts().to_dict())
     assignments.loc[indices_to_change, "variant_id"] = treatment_id
+    print("After change:", assignments.loc[target_mask, "variant_id"].value_counts().to_dict())
     assignments.to_csv(path, index=False)
 
+    target_counts = assignments.loc[
+        target_mask, "variant_id"
+    ].value_counts()
 
-
-
-def inject_metric_definition_change():
-    case_dir = prepare_case("metric_definition_changed")
-
-    definitions = pd.DataFrame([
-        {
-            "metric_definition_id": "METRIC-CONV-V1",
-            "metric_name": "conversion_rate",
-            "numerator": "unique_conversions",
-            "denominator": "assigned_users",
-            "effective_from": "2026-01-01",
-            "version": 1,
-        },
-        {
-            "metric_definition_id": "METRIC-CONV-V2",
-            "metric_name": "conversion_rate",
-            "numerator": "unique_exposed_conversions",
-            "denominator": "exposed_users",
-            "effective_from": "2026-02-15",
-            "version": 2,
-        },
-    ])
-
-    output_path = case_dir / "metric_definitions.csv"
-    definitions.to_csv(output_path, index=False)
-
-    print(f"Metric definitions written to: {output_path}")
-    print(f"Versions created: {len(definitions)}")
-
+    print("SRM injection completed!")
+    print("Target experiment counts:")
+    print(target_counts)
 
 
 def main():
@@ -153,4 +134,11 @@ def main():
 
     inject_multiple_variant_assignment()
     inject_exposure_before_assignment()
-    inject_inc_
+    inject_sample_ratio_mismatch()
+    
+
+
+if __name__ == "__main__":
+    print("Starting anomaly injection...")
+    main()
+

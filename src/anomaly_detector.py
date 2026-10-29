@@ -156,7 +156,7 @@ def detect_sample_ratio_mismatch(case_dir):
             f_exp=expected.reindex(counts.index).to_numpy(),
         )
 
-        if p_value < 0.001:
+        if p_value < 0.01:
             findings.append({
                 "anomaly_type": "sample_ratio_mismatch",
                 "experiment_id": experiment_id,
