@@ -116,12 +116,13 @@ This document records the AI-assisted development activities used to build the E
 **Development activity:**
 
 * Exported six JSON datasets.
-* Created `outputs/experiment_analysis.db`.
+* Created `outputs/experiment_analysis.db` with explicit primary-key, foreign-key, uniqueness, and check constraints.
 * Created `outputs/seed.sql`.
 * Created a database verification script.
 * Verified six tables and 500,000 assignment records.
+* Confirmed database integrity and foreign-key checks passed.
 
-**Known limitation:** The current SQLite export does not explicitly enforce all primary-key and foreign-key constraints.
+**Known limitation:** Some cross-table business rules are validated by the application rather than enforced entirely by SQLite.
 
 ## 11. Source Manifest
 

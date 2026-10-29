@@ -286,7 +286,7 @@ The export module produces JSON datasets under `outputs/json/`, a SQLite databas
 
 The source manifest at `outputs/source_manifest.json` records dataset names, relative paths, column names, record counts, file sizes, generation configuration, and SHA-256 checksums.
 
-The current database export contains the six source datasets. Explicit relational constraints and a complete relational data model remain areas for improvement.
+The SQLite export contains six source tables with explicit primary keys, foreign keys, uniqueness constraints, and applicable check constraints. Database integrity and foreign-key checks passed against the current generated dataset. Some cross-table business rules, including event-to-assignment consistency and experiment allocation totals, are validated by the application rather than enforced entirely by SQLite.
 
 ## 11. Current Verification Results
 
@@ -306,8 +306,8 @@ These are development results for the current synthetic data and code version. R
 
 Potential improvements include:
 
-* Add explicit primary-key, foreign-key, and check constraints to the SQLite schema.
-* Implement a complete relational model for all required entities.
+* Add database-level enforcement for additional cross-table business rules.
+* Add explicit MetricDefinition and GuardrailMetric source entities to the relational model.
 * Move guardrail event generation into a dedicated, traceable data-generation stage.
 * Validate all event-window and experiment-lifecycle rules.
 * Improve anomaly detection coverage and automated negative tests.
