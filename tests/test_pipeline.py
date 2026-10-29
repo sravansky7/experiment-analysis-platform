@@ -83,6 +83,16 @@ def test_anomaly_detector_finds_metric_definition_change():
         for finding in findings
     )
 
+def test_anomaly_detector_finds_sample_ratio_mismatch():
+    findings = detect_case("sample_ratio_mismatch")
+
+    assert any(
+        finding["anomaly_type"] == "sample_ratio_mismatch"
+        for finding in findings
+    )
+
+
+
 
 
 def test_validation_detects_conversion_outside_experiment_window(
