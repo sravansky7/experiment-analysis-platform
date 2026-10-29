@@ -40,6 +40,7 @@ The full synthetic dataset currently contains:
 | Assignments       | 500,000 |
 | Exposure events   | 450,238 |
 | Conversion events |  55,194 |
+| Guardrail events  |      20 |
 
 The audience contains 50,000 eligible synthetic users. Each user is assigned to one variant in each of the 10 experiments.
 
@@ -272,14 +273,24 @@ The current synthetic workflow evaluates payment-error and refund rates. Configu
 
 ### Anomaly detection
 
-The project includes synthetic anomaly cases for selected scenarios, including:
+The platform includes an anomaly-detection workflow that tests selected data-quality failure scenarios using isolated synthetic datasets.
+
+The implemented detectors cover:
 
 * Multiple variant assignments
 * Exposure before assignment
 * Conversion outside the permitted window
+* Sample ratio mismatch (SRM)
 * Metric-definition changes
 
-These cases support testing of the anomaly-detection implementation. The currently tested scenarios do not imply that every possible anomaly is detected.
+The anomaly detector generates a report at `outputs/anomaly_detection_report.csv`, containing the detected anomaly types, affected experiments where applicable, and explanatory details.
+
+The SRM detector compares observed variant assignment counts with expected counts derived from configured allocation proportions using a chi-square goodness-of-fit test. The configured significance threshold determines when an SRM finding is reported.
+
+**Verification:** All five implemented anomaly scenarios were detected in the latest development run. Automated regression tests cover the individual detection scenarios.
+
+These results demonstrate detection of the tested synthetic cases; they do not guarantee detection of every possible data-quality problem.
+
 
 ## 10. Data Exports and Traceability
 
@@ -289,21 +300,23 @@ The export module produces JSON datasets under `outputs/json/`, a SQLite databas
 
 The source manifest at `outputs/source_manifest.json` records dataset names, relative paths, column names, record counts, file sizes, generation configuration, and SHA-256 checksums.
 
-The SQLite export contains six source tables with explicit primary keys, foreign keys, uniqueness constraints, and applicable check constraints. Database integrity and foreign-key checks passed against the current generated dataset. Some cross-table business rules, including event-to-assignment consistency and experiment allocation totals, are validated by the application rather than enforced entirely by SQLite.
+The SQLite export contains seven source tables with explicit primary keys, foreign keys, uniqueness constraints, and applicable check constraints. Database integrity and foreign-key checks passed against the current generated dataset. Some cross-table business rules, including event-to-assignment consistency and experiment allocation totals, are validated by the application rather than enforced entirely by SQLite.
 
 ## 11. Current Verification Results
 
-During development, the following results were observed:
+The following results were observed during development:
 
-* Full dataset generated successfully.
-* Implemented validation checks passed on the generated dataset.
-* No SRM alerts were reported in the baseline run.
-* One experiment failed the configured payment-error guardrail.
-* All six raw dataset checksums matched across two generation runs.
-* Database verification confirmed six tables and 500,000 assignment rows.
-* Nine automated tests passed in a development run.
+* Generated the full synthetic dataset successfully.
+* Validated the generated datasets using the implemented validation checks.
+* Completed baseline randomization analysis without SRM alerts.
+* Detected all five configured synthetic anomaly scenarios.
+* Identified one experiment that failed the configured payment-error guardrail.
+* Matched all seven dataset checksums across two reproducibility runs.
+* Verified the SQLite database, including its seven tables, 500,000 assignment rows, and foreign-key integrity.
+* Passed all 13 automated tests in the latest test run.
 
-These are development results for the current synthetic data and code version. Rerun the tests and pipeline to verify the state of any later revision.
+All data and experiment outcomes are synthetic. These results describe the tested development version and should be reverified after subsequent code or configuration changes.
+
 
 ## 12. Limitations and Future Improvements
 
