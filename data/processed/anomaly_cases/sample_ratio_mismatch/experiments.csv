@@ -1,0 +1,11 @@
+experiment_id,experiment_name,hypothesis,primary_metric,status,start_date,end_date,random_seed
+EXP-2026-000001,Checkout Experiment 1,The treatment variant improves purchase conversion.,conversion_rate,completed,2026-01-01,2026-02-01,20261023
+EXP-2026-000002,Checkout Experiment 2,The treatment variant improves purchase conversion.,conversion_rate,completed,2026-01-01,2026-02-01,20261024
+EXP-2026-000003,Checkout Experiment 3,The treatment variant improves purchase conversion.,conversion_rate,completed,2026-01-01,2026-02-01,20261025
+EXP-2026-000004,Checkout Experiment 4,The treatment variant improves purchase conversion.,conversion_rate,completed,2026-01-01,2026-02-01,20261026
+EXP-2026-000005,Checkout Experiment 5,The treatment variant improves purchase conversion.,conversion_rate,completed,2026-01-01,2026-02-01,20261027
+EXP-2026-000006,Checkout Experiment 6,The treatment variant improves purchase conversion.,conversion_rate,completed,2026-01-01,2026-02-01,20261028
+EXP-2026-000007,Checkout Experiment 7,The treatment variant improves purchase conversion.,conversion_rate,completed,2026-01-01,2026-02-01,20261029
+EXP-2026-000008,Checkout Experiment 8,The treatment variant improves purchase conversion.,conversion_rate,completed,2026-01-01,2026-02-01,20261030
+EXP-2026-000009,Checkout Experiment 9,The treatment variant improves purchase conversion.,conversion_rate,completed,2026-01-01,2026-02-01,20261031
+EXP-2026-000010,Checkout Experiment 10,The treatment variant improves purchase conversion.,conversion_rate,completed,2026-01-01,2026-02-01,20261032

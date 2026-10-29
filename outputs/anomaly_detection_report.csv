@@ -1,0 +1,5 @@
+case_name,anomaly_type,experiment_id,user_id,details
+multiple_variant_assignment,multiple_variant_assignment,EXP-2026-000001,USR-000001,User has 2 assignments in the same experiment.
+exposure_before_assignment,exposure_before_assignment,EXP-2026-000001,USR-000001,Exposure occurred before assignment.
+inconsistent_conversion_window,inconsistent_conversion_window,EXP-2026-000001,USR-000001,Conversion timestamp 2026-03-15 10:00:00 falls outside the permitted outcome window.
+metric_definition_changed,metric_definition_changed,,,"Metric 'conversion_rate' has different numerator or denominator definitions across versions ['1', '2']. Review the effective dates and existing results."

@@ -1,0 +1,23 @@
+# Python virtual environment
+.venv/
+venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Test cache
+.pytest_cache/
+
+# Environment secrets
+.env
+.env.*
+
+# VS Code local settings
+.vscode/
+# Large generated database and SQL exports
+outputs/experiment_analysis.db
+outputs/seed.sql
+
+# Large JSON exports can be regenerated from source CSVs
+outputs/json/

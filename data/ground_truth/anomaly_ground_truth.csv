@@ -1,0 +1,6 @@
+anomaly_id,case_name,expected_issue
+ANOM-001,multiple_variant_assignment,A user is assigned to multiple variants in one experiment.
+ANOM-002,exposure_before_assignment,An exposure occurs before its assignment.
+ANOM-003,inconsistent_conversion_window,A conversion occurs outside the experiment's valid period.
+ANOM-004,sample_ratio_mismatch,Assignment counts no longer match the intended allocation ratio.
+ANOM-005,metric_definition_changed,The metric definition changes after the experiment starts.

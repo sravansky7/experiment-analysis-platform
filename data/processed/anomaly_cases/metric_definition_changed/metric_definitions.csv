@@ -1,0 +1,3 @@
+metric_definition_id,metric_name,numerator,denominator,effective_from,version
+METRIC-CONV-V1,conversion_rate,unique_conversions,assigned_users,2026-01-01,1
+METRIC-CONV-V2,conversion_rate,unique_exposed_conversions,exposed_users,2026-02-15,2
